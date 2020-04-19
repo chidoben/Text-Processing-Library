@@ -28,7 +28,7 @@ and for calculating the N most frequent words in a text.
 
 from operator import itemgetter
 from collections import Counter
-from typing import List
+from typing import List, Tuple
 import re
 
 
@@ -41,12 +41,21 @@ def extract_valid_words_from_text_and_convert_to_lower_case(text: str) -> List[s
        A list of the valid words extracted out of the input text
     Return type:
        List[str]
+    Raises:
+        A TypeError exception if the input text is not a string
+        A ValueError exception if the input text is empty
     """
+    if not isinstance(text, str):
+        raise TypeError('Invalid input text: Input text should be a string')
+
+    if not text:
+        raise ValueError('Invalid input text: Input text should not be empty')
+
     valid_words_list = re.findall(r'[A-Za-z]+', text)
     return [valid_word.lower() for valid_word in valid_words_list]
 
 
-IWordFrequency = List[(str, int)]
+IWordFrequency = List[Tuple[str, int]]
 
 
 class IWordFrequencyAnalyzer:
@@ -79,8 +88,11 @@ class IWordFrequencyAnalyzer:
         """
         valid_words_list = extract_valid_words_from_text_and_convert_to_lower_case(text)
         word_frequencies = Counter(valid_words_list)
-        sorted_word_frequencies = sorted(word_frequencies.items(), key=itemgetter(1))
-        return sorted_word_frequencies[0][1]
+        sorted_word_frequencies = sorted(word_frequencies.items(), key=itemgetter(1), reverse=True)
+        if not sorted_word_frequencies:
+            return 0
+        else:
+            return sorted_word_frequencies[0][1]
 
     @staticmethod
     def calculate_frequency_for_word(text: str, word: str) -> int:
@@ -93,7 +105,11 @@ class IWordFrequencyAnalyzer:
            A number representing the frequency of the given word in the text
         Return type:
            int
+         Raises:
+            A TypeError exception if word is not a string
         """
+        if not isinstance(word, str):
+            raise TypeError('Invalid input: word should be a string')
         valid_words_list = extract_valid_words_from_text_and_convert_to_lower_case(text)
         word_frequencies = Counter(valid_words_list)
         return word_frequencies[word]
@@ -111,8 +127,12 @@ class IWordFrequencyAnalyzer:
            A list containing the most frequent 'n' words and their frequencies
         Return type:
            IWordFrequency
+         Raises:
+            A TypeError exception if n is not an integer
         """
+        if not isinstance(n, int):
+            raise TypeError('Invalid input: n should be an integer')
         valid_words_list = extract_valid_words_from_text_and_convert_to_lower_case(text)
         word_frequencies = Counter(valid_words_list)
-        sorted_word_frequencies = sorted(word_frequencies.items(), key=itemgetter(1))
+        sorted_word_frequencies = sorted(word_frequencies.items(), key=lambda x: (-x[1], x[0]))
         return sorted_word_frequencies[:n]
